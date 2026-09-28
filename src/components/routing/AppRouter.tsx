@@ -50,6 +50,9 @@ import { ContractorProfileView } from '../../views/contractor/ContractorProfileV
 import { ContractorSettingsView } from '../../views/contractor/ContractorSettingsView';
 
 // Admin Views
+import { AdminLoginView } from '../../views/admin/AdminLoginView';
+import { AdminForgotPasswordView } from '../../views/admin/AdminForgotPasswordView';
+import { AdminResetPasswordView } from '../../views/admin/AdminResetPasswordView';
 import { AdminDashboardView } from '../../views/admin/AdminDashboardView';
 import { AdminCustomersView } from '../../views/admin/AdminCustomersView';
 import { AdminContractorsView } from '../../views/admin/AdminContractorsView';
@@ -68,10 +71,34 @@ import { AdminAuditLogsView } from '../../views/admin/AdminAuditLogsView';
 import { AdminSettingsView } from '../../views/admin/AdminSettingsView';
 
 export const AppRouter: React.FC = () => {
-  const { currentRoute } = useNavigation();
+  const { currentRoute, navigate } = useNavigation();
   const { currentUser } = useAuth();
 
-  // Route authorization check
+  // Admin route protection: Unauthenticated -> redirect to /admin/login; Non-Admin -> Access Denied
+  const isAdminRoute = currentRoute.startsWith('admin-');
+  const isAdminAuthRoute =
+    currentRoute === 'admin-login' ||
+    currentRoute === 'admin-forgot-password' ||
+    currentRoute === 'admin-reset-password';
+
+  if (isAdminRoute && !isAdminAuthRoute) {
+    if (!currentUser) {
+      return <AdminLoginView />;
+    }
+    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN') {
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-50">
+          <PublicHeader />
+          <main className="flex-1 flex items-center justify-center p-6">
+            <UnauthorizedState />
+          </main>
+          <PublicFooter />
+        </div>
+      );
+    }
+  }
+
+  // Route authorization check for other roles
   const isAuthorized = canAccessRoute(currentRoute, currentUser?.role);
 
   if (!isAuthorized) {
@@ -231,6 +258,14 @@ export const AppRouter: React.FC = () => {
           <ContractorSettingsView />
         </DashboardLayout>
       );
+
+    // Admin Authentication Portal
+    case 'admin-login':
+      return <AdminLoginView />;
+    case 'admin-forgot-password':
+      return <AdminForgotPasswordView />;
+    case 'admin-reset-password':
+      return <AdminResetPasswordView />;
 
     // Admin Portal
     case 'admin-dashboard':

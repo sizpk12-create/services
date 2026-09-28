@@ -53,12 +53,14 @@ class AccountService {
   }
 
   private initStore() {
-    // 1. Seed demo accounts
+    // 1. Seed demo accounts ONLY for CUSTOMER and CONTRACTOR
     Object.values(DEMO_USERS).forEach((entry) => {
-      this.users.set(entry.user.id, { ...entry.user });
-      this.credentials.set(entry.user.email.toLowerCase(), 'DemoPass123!');
-      if (entry.profile && entry.user.role === 'CUSTOMER') {
-        this.profiles.set(entry.user.id, { ...(entry.profile as CustomerProfile) });
+      if (entry.user.role === 'CUSTOMER' || entry.user.role === 'CONTRACTOR') {
+        this.users.set(entry.user.id, { ...entry.user });
+        this.credentials.set(entry.user.email.toLowerCase(), 'DemoPass123!');
+        if (entry.profile && entry.user.role === 'CUSTOMER') {
+          this.profiles.set(entry.user.id, { ...(entry.profile as CustomerProfile) });
+        }
       }
     });
 
@@ -239,6 +241,14 @@ class AccountService {
       return {
         success: false,
         message: 'This account has been deactivated. Please contact support.',
+      };
+    }
+
+    // Isolate Admin accounts: Must use /admin/login
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+      return {
+        success: false,
+        message: 'Administrator authentication is restricted to the dedicated Administrator Terminal at /admin/login.',
       };
     }
 

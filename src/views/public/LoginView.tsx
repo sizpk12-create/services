@@ -182,23 +182,16 @@ export const LoginView: React.FC = () => {
                 <div className="font-bold text-slate-900">Marcus V.</div>
                 <div className="text-[11px] text-slate-500 truncate">Contractor (Apex HVAC)</div>
               </button>
+            </div>
 
+            <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
+              <span className="text-slate-500">Authorized Personnel?</span>
               <button
                 type="button"
-                onClick={() => handleQuickLogin('admin')}
-                className="text-left p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 hover:border-purple-300 transition cursor-pointer text-xs"
+                onClick={() => navigate('admin-login')}
+                className="font-semibold text-slate-700 hover:text-indigo-600 cursor-pointer flex items-center gap-1"
               >
-                <div className="font-bold text-slate-900">Elena R.</div>
-                <div className="text-[11px] text-slate-500 truncate">Staff Administrator</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('superAdmin')}
-                className="text-left p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition cursor-pointer text-xs"
-              >
-                <div className="font-bold text-slate-900">Alex S.</div>
-                <div className="text-[11px] text-slate-500 truncate">Super Admin</div>
+                <span>Staff & Administrator Portal →</span>
               </button>
             </div>
           </div>

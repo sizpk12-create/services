@@ -17,6 +17,7 @@ import { DEMO_USERS } from '../config/demo';
 import { auditLogger } from '../services/auditLogger';
 import { accountService, RegisterCustomerPayload, AuthResult } from '../services/accountService';
 import { contractorService, RegisterContractorPayload } from '../services/contractorService';
+import { adminAuthService } from '../services/adminAuthService';
 
 interface UpdateProfilePayload {
   firstName?: string;
@@ -182,6 +183,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     if (currentUser) {
+      if (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') {
+        adminAuthService.logout();
+      }
       auditLogger.log({
         actorId: currentUser.id,
         actorRole: currentUser.role,
@@ -253,6 +257,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchDemoRole = (roleKey: 'customer' | 'contractor' | 'admin' | 'superAdmin') => {
+    // Prevent unauthenticated elevation to Admin
+    if (roleKey === 'admin' || roleKey === 'superAdmin') {
+      const activeAdmin = adminAuthService.getCurrentAdmin();
+      if (activeAdmin) {
+        setCurrentUser(activeAdmin.user);
+        setCurrentProfile(null);
+        return;
+      }
+      // If no admin session active, route to dedicated Admin Login
+      window.location.hash = '#/admin-login';
+      return;
+    }
+
     const selected = DEMO_USERS[roleKey];
     if (selected) {
       setCurrentUser(selected.user);

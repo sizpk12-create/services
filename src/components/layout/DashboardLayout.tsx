@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '../../context/NavigationContext';
+import { adminAuthService } from '../../services/adminAuthService';
 import { Logo } from '../common/Logo';
 import { Badge, Button } from '../common/UIComponents';
 import { AppRoute } from '../../types/navigation';
@@ -218,7 +219,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               id="side-logout-btn"
               onClick={() => {
                 logout();
-                navigate('login');
+                if (effectiveRole === 'ADMIN' || effectiveRole === 'SUPER_ADMIN') {
+                  adminAuthService.logout();
+                  navigate('admin-login');
+                } else {
+                  navigate('login');
+                }
               }}
               className="flex items-center justify-center gap-1 text-[11px] font-semibold text-rose-400 hover:text-rose-300 bg-rose-950/40 hover:bg-rose-900/40 py-1.5 px-2 rounded transition cursor-pointer"
             >

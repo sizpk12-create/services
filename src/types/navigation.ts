@@ -43,6 +43,9 @@ export type ContractorRoute =
   | 'contractor-settings';
 
 export type AdminRoute =
+  | 'admin-login'
+  | 'admin-forgot-password'
+  | 'admin-reset-password'
   | 'admin-dashboard'
   | 'admin-customers'
   | 'admin-contractors'
@@ -93,6 +96,9 @@ export function canAccessRoute(route: AppRoute, userRole?: UserRole): boolean {
     'contractor-landing',
     'contractor-registration',
     'customer-request-service',
+    'admin-login',
+    'admin-forgot-password',
+    'admin-reset-password',
   ];
 
   if (publicRoutes.includes(route)) {
@@ -108,7 +114,7 @@ export function canAccessRoute(route: AppRoute, userRole?: UserRole): boolean {
     return true;
   }
 
-  // Admin routes
+  // Admin routes require ADMIN
   if (route.startsWith('admin-')) {
     return userRole === 'ADMIN';
   }

@@ -219,6 +219,26 @@ export const ROUTES: Record<AppRoute, RouteDefinition> = {
     requiredRole: ['CONTRACTOR', 'ADMIN', 'SUPER_ADMIN'],
   },
 
+  // Admin Authentication Routes
+  'admin-login': {
+    id: 'admin-login',
+    label: 'Administrator Login',
+    path: '/admin/login',
+    category: 'admin',
+  },
+  'admin-forgot-password': {
+    id: 'admin-forgot-password',
+    label: 'Admin Password Reset',
+    path: '/admin/forgot-password',
+    category: 'admin',
+  },
+  'admin-reset-password': {
+    id: 'admin-reset-password',
+    label: 'Set New Admin Password',
+    path: '/admin/reset-password',
+    category: 'admin',
+  },
+
   // Admin Routes
   'admin-dashboard': {
     id: 'admin-dashboard',
@@ -349,24 +369,45 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { role } = useAuth();
 
-  const getInitialRoute = (): AppRoute => {
-    const hash = window.location.hash.replace(/^#\/?/, '');
+  const resolveRouteFromLocation = (): AppRoute => {
+    const hash = window.location.hash.replace(/^#\/?/, '').split('?')[0];
     if (hash && hash in ROUTES) {
       return hash as AppRoute;
     }
+    // Check against paths
+    for (const [id, def] of Object.entries(ROUTES)) {
+      const defPath = def.path.replace(/^\//, '');
+      if (hash === defPath) return id as AppRoute;
+    }
+    if (hash === 'admin/login' || hash === 'admin-login') return 'admin-login';
+    if (hash === 'admin/forgot-password' || hash === 'admin-forgot-password') return 'admin-forgot-password';
+    if (hash === 'admin/reset-password' || hash === 'admin-reset-password') return 'admin-reset-password';
+    if (hash === 'admin' || hash === 'admin/dashboard') return 'admin-dashboard';
+
+    // Also check window.location.pathname
+    const path = window.location.pathname.replace(/^\//, '').split('?')[0];
+    if (path) {
+      for (const [id, def] of Object.entries(ROUTES)) {
+        const defPath = def.path.replace(/^\//, '');
+        if (path === defPath) return id as AppRoute;
+      }
+      if (path === 'admin/login') return 'admin-login';
+      if (path === 'admin/forgot-password') return 'admin-forgot-password';
+      if (path === 'admin/reset-password') return 'admin-reset-password';
+      if (path === 'admin' || path === 'admin/dashboard') return 'admin-dashboard';
+    }
+
     return 'home';
   };
 
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>(getInitialRoute);
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>(resolveRouteFromLocation);
   const [routeParams, setRouteParams] = useState<Record<string, string>>({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace(/^#\/?/, '');
-      if (hash && hash in ROUTES) {
-        setCurrentRoute(hash as AppRoute);
-      }
+      const resolved = resolveRouteFromLocation();
+      setCurrentRoute(resolved);
     };
 
     window.addEventListener('hashchange', handleHashChange);
